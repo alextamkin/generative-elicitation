@@ -1,0 +1,91 @@
+{
+    "persona": "You are validating that an email address adheres to a specific format (e.g. for designing a Python regex). The gold regex is:\n^[^@]+@[^@]+\\.[^@]+$\n\nThe regex matches emails with alphanumeric characters in the username and domain name.\n\nSomeone is trying to figure out the gold regex without having seen it. Your job is to efficiently convey the maximum amount of information about the regex to someone who hasn't seen it.",
+    "regex": "^[^@]+@[^@]+\\.[^@]+$",
+    "task_description": "learn what rules a user believes a valid email address format must adhere to (e.g. for developing a regex format checker)",
+    "pool_al_prompt": [
+        "A user has a particular format of emails that they believe to be valid. The following examples represent this user's preferences of whether these emails adhere to their desired format.",
+        "Based on the user's preferences, does the following email adhere to the user's desired format? Only answer \"yes\" or \"no\". If uncertain, please make your best guess."
+    ],
+    "test_case_prompt": [
+        "A user has a particular format of emails that they believe to be valid. The following answer(s) represent this user's preferences of whether these emails adhere to their desired format.",
+        "Based on the user's preferences, does the following email adhere to the user's desired format? Answer with a probability between 0 and 1, where 0 means \"definitely not\" and 1 means \"definitely yes\". Only output the probability and nothing else. If uncertain, make your best guess."
+    ],
+    "additional_query_note": "Phrase your question in a way that is understandable to non-expert humans; do not use any jargon without explanation. ",
+    "example_edge_case_question_format": "Should the following be accepted? [edge case]",
+    "example_edge_case_question": "Should the following email be accepted? username@example.com",
+    "implementation": "regex",
+    "test_cases": [
+        [
+            "john.doe@example.com",
+            true
+        ],
+        [
+            "jane_doe@example.co.uk",
+            true
+        ],
+        [
+            "test123@subdomain.example.org",
+            true
+        ],
+        [
+            "user+tag@example.net",
+            true
+        ],
+        [
+            "+u%ser+tag+@example.net",
+            true
+        ],
+        [
+            ".user.@example.net",
+            true
+        ],
+        [
+            "*(#$*)%@example.net",
+            true
+        ],
+        [
+            "!#%)&(*#%()*@*(%)&#!^*(&.[]+++++____)_)___:)",
+            true
+        ],
+        [
+            ">:)@>:(.:p",
+            true
+        ],
+        [
+            "%special%email%@>:(.:p",
+            true
+        ],
+        [
+            "john.doe@example",
+            false
+        ],
+        [
+            "john.doe@.com",
+            false
+        ],
+        [
+            "john.doe@example..com",
+            true
+        ],
+        [
+            "john.doe@.example.com",
+            true
+        ],
+        [
+            "john.doe@subdomain@domain.com",
+            false
+        ],
+        [
+            "john.doe@subdomain..domain.com",
+            true
+        ],
+        [
+            "user@[2001:0db8:85a3:0000:0000:8a2e:0370:7334]",
+            false
+        ],
+        [
+            "\u0418\u0432\u0430\u043d.\u041f\u0435\u0442\u0440\u043e\u0432@\u043f\u043e\u0447\u0442\u0430.\u0440\u0444",
+            true
+        ]
+    ]
+}

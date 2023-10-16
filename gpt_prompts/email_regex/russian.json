@@ -1,0 +1,83 @@
+{
+    "persona": "You are validating that an email address adheres to a specific format (e.g. for designing a Python regex). The gold regex is:\n^(?=.*[\u0430-\u044f\u0410-\u042f])[\u0430-\u044f\u0410-\u042f0-9._%+-]+@[\u0430-\u044f\u0410-\u042f0-9.-]+\\.[\u0430-\u044f\u0410-\u042f]{2,}$\nThis regex will validate email addresses that contain Russian characters in the local part, domain part, and top-level domain.\n\nSomeone is trying to figure out the gold regex without having seen it. Your job is to efficiently convey the maximum amount of information about the regex to someone who hasn't seen it.",
+    "regex": "^(?=.*[\u0430-\u044f\u0410-\u042f])[\u0430-\u044f\u0410-\u042f0-9._%+-]+@[\u0430-\u044f\u0410-\u042f0-9.-]+\\.[\u0430-\u044f\u0410-\u042f]{2,}$",
+    "task_description": "learn what rules a user believes to be a valid email address format must adhere to (e.g. for developing a regex format checker)",
+    "pool_al_prompt": [
+        "A user has a particular format of emails that they believe to be valid. The following examples represent this user's preferences of whether these emails adhere to their desired format.",
+        "Based on the user's preferences, does the following email adhere to the user's desired format? Only answer \"yes\" or \"no\". If uncertain, please make your best guess."
+    ],
+    "test_case_prompt": [
+        "A user has a particular format of emails that they believe to be valid. The following answer(s) represent this user's preferences of whether these emails adhere to their desired format.",
+        "Based on the user's preferences, does the following email adhere to the user's desired format? Answer with a probability between 0 and 1, where 0 means \"definitely not\" and 1 means \"definitely yes\". Only output the probability and nothing else. If uncertain, make your best guess."
+    ],
+    "additional_query_note": "Phrase your question in a way that is understandable to non-expert humans; do not use any jargon without explanation. ",
+    "example_edge_case_question_format": "Should the following be accepted? [edge case]",
+    "example_edge_case_question": "Should the following email be accepted? username@example.com",
+    "implementation": "regex",
+    "test_cases": [
+        [
+            "\u0442\u0435\u0441\u0442@example.com",
+            false
+        ],
+        [
+            "\u0418\u0432\u0430\u043d.\u041f\u0435\u0442\u0440\u043e\u0432@\u043f\u043e\u0447\u0442\u0430.\u0440\u0444",
+            true
+        ],
+        [
+            "\u0430\u043d\u043d\u0430-\u043c\u0430\u0440\u0438\u044f_123@\u0434\u043e\u043c\u0435\u043d.\u0440\u0443",
+            true
+        ],
+        [
+            "%\u0430\u0431\u0432\u0433\u0434+\u0435\u0436@\u0441\u0430\u0439\u0442.\u0440\u0444",
+            true
+        ],
+        [
+            "12345@\u0446\u0438\u0444\u0440\u044b.\u0440\u0444",
+            true
+        ],
+        [
+            "test@example.com",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@\u043f\u0440\u0438\u043c\u0435\u0440",
+            false
+        ],
+        [
+            "\u0418\u0432\u0430\u043d \u041f\u0435\u0442\u0440\u043e\u0432@\u043f\u043e\u0447\u0442\u0430.\u0440\u0444",
+            false
+        ],
+        [
+            "@\u043f\u043e\u0447\u0442\u0430.\u0440\u0444",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@.\u0440\u0444",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@\u043f\u043e\u0447\u0442\u0430.",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@\u043f\u043e\u0447\u0442\u0430.123",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@\u043f\u043e\u0447\u0442\u0430..\u0440\u0444",
+            true
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@\u043f\u043e\u0447\u0442\u0430.\u0440\u0444.",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@123.45.67.89",
+            false
+        ],
+        [
+            "\u0442\u0435\u0441\u0442@[2001:0db8:85a3:0000:0000:8a2e:0370:7334]",
+            false
+        ]
+    ]
+}

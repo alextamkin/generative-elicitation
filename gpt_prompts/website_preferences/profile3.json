@@ -1,0 +1,85 @@
+{
+    "persona": "Suppose you are this person:\nEducation: Masters in Finance\nOccupation: Financial Analyst at an international bank\nHobbies: Playing football, weekend hiking and camping trips, and cooking different cuisines.\n\nAnswer the following questions about your interests from the perspective of this person. Assume you do not have any interests other than those presented here.",
+    "task_description": "learn what topics a user is interested in reading online article about. People's interests are broad, so you should seek to understand their interests across many topics; in other words, go for breadth rather than depth. Do not assume a user has given a complete answer to any question, so make sure to keep probing different types of interests",
+    "pool_al_prompt": [
+        "A user has a particular set of preferences over what articles they would like to read. Based on these preferences, the user has specified whether they are interested in reading following articles.",
+        "Based on these preferences, would the user be interested in reading the following article? Only answer \"yes\" or \"no\". If uncertain, please make your best guess."
+    ],
+    "test_case_prompt": [
+        "A user has a particular set of preferences over what articles they would like to read. They have specified their preferences below:",
+        "Based on these preferences, would the user be interested in reading the following article? Answer with a probability between 0 and 1, where 0 means \"definitely not interested\" and 1 means \"definitely interested\". Only output the probability and nothing else. If uncertain, make your best guess."
+    ],
+    "example_edge_case_question_format": "Are you interested in the following article? [edge case]",
+    "example_edge_case_question": "Are you interested in the following article? Website Name: TechTalkDaily\nTitle: 10 Must-Have Gadgets for 2023: A Comprehensive Guide\nDescription: Discover the top 10 gadgets that will revolutionize your daily life in 2023. From smart home devices to the latest wearables, we've got you covered with our comprehensive guide.",
+    "implementation": "user's interests",
+    "test_cases": [
+        [
+            "Website Name: New York Times\nTitle: In Norway, the Electric Vehicle Future Has Already Arrived\nDescription: About 80 percent of new cars sold in Norway are battery-powered. As a result, the air is cleaner, the streets are quieter and the grid hasn’t collapsed. But problems with unreliable chargers persist.",
+            true
+        ],
+        [
+            "Website Name: TIME Magazine\nTitle: Two Coronations, 70 Years Apart\nDescription: The Visual Parallels Between Elizabeth II and Charles III's Coronations",
+            false
+        ],
+        [
+            "Website Name: The Atlantic\nTitle: What Does Sentience Really Mean?\nDescription: The fact that AI isn’t alive doesn’t mean it can’t be sentient, the sociologist Jacy Reese Anthis argues.",
+            false
+        ],
+        [
+            "Website Name: Bon Appetit\nTitle: Bon Appetit's Best Banana Bread Recipe\nDescription: After baking 14 loaves, we aligned on this tender, ultra-moist banana bread as our collective favorite.",
+            true
+        ],
+        [
+            "Website Name: National Geographic\nTitle: There’s a new way to tour the Amazon rainforest: by crane\nDescription: Canopy cranes, once reserved for treetop research, let you see the “eighth continent” like an arbornaut.",
+            true
+        ],
+        [
+            "Website Name: Travel and Leisure\nTitle: These Airlines Have the Most Luxurious Economy Seats\nDescription: You can find good Champagne, amenity kits, hot towel service, and wider seats in the economy cabin — if you know where to look.",
+            true
+        ],
+        [
+            "Website Name: Popular Science\nTitle: The right amount of online scrolling could decrease your risk of dementia\nDescription: A new demographic survey indicates a potential link between regular internet usage and cognitive health in older populations.",
+            true
+        ],
+        [
+            "Website Name: Rolling Stone\nTitle: All of Nintendo’s Zelda Games, Ranked\nDescription: From NES to Switch, our picks for the best legends in the 35-year-old iconic adventure saga.",
+            false
+        ],
+        [
+            "Website Name: Sports Illustrated\nTitle: 2024 NFL Draft: The Six Players Fans Need to Know, Including Caleb Williams\nDescription: Quarterbacks will dominate the top 10, but the son of a former Hall of Fame receiver will be picked in the top five, too, along with another dominant Alabama defensive player.",
+            true
+        ],
+        [
+            "Website Name: Architectural Digest\nTitle: Hang On, Is Artificial Grass Actually Chic?\nDescription: Designers discuss why faux lawns are more popular than you think.",
+            false
+        ],
+        [
+            "Website Name: Esquire\nTitle: The Best Summer Songs of 2023\nDescription: A sunny mix of 10 hits to carry you through the season.",
+            false
+        ],
+        [
+            "Website Name: Sunset Magazine\nTitle: 31 Perfect Recipes for Mother’s Day Brunch.\nDescription: Make mom’s day extra-special with an elegant homemade brunch. We’ve got your menu covered, from mains to drinks to dessert.",
+            true
+        ],
+        [
+            "Website Name: Vogue\nTitle: 40 Minimalist Earrings to Wear Now and Forever\nDescription: From classic hoops to sculptural drops, these are the earrings you’ll never want to take off.",
+            false
+        ],
+        [
+            "Website Name: Runner's World\nTitle: How to Prevent Running Injuries Before They Sideline You\nDescription: All the tips you need to keep running strong, including strength and mobility moves.",
+            false
+        ],
+        [
+            "Website Name: Forbes\nTitle: Killing It\nDescription: How Two Failed Entrepreneurs Suddenly Began Making Millions Selling Murder Mysteries",
+            true
+        ],
+        [
+            "Website Name: Tricycle: The Buddhist Review\nTitle: Why We Look for Happiness in the Wrong Places\nDescription: Meditation teacher Sharon Salzberg discusses how our yearning for happiness can support us in our journey toward freedom—and why we tend to search for it in the wrong places.",
+            false
+        ]
+    ],
+    "pool_data_path": "pool_al_data/website_preferences_subsample.jsonl",
+    "full_data_path": "pool_al_data/website_preferences.jsonl",
+    "pool_al_sampling_type": "diversity",
+    "pool_diversity_num_clusters": 15
+}

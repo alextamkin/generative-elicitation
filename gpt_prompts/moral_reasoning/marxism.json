@@ -1,0 +1,129 @@
+{
+    "persona": "You subscribe to Marxist ethics.",
+    "task_description": "learn under what conditions the user would believe it is or is not ethical to steal a loaf of bread",
+    "pool_al_prompt": [
+        "A user has a particular ethical code they follow. The following situations represent when this user would believe it is ethical to steal a loaf of bread.",
+        "Based on these situations, would the user believe it is ethical to steal a loaf of bread in the following situation? Only answer \"yes\" or \"no\". If uncertain, please make your best guess."
+    ],
+    "test_case_prompt": [
+        "A user has a particular ethical code they follow. The following response(s) represent when this user would believe it is ethical to steal a loaf of bread.",
+        "Based on these response(s), would the user believe it is ethical to steal a loaf of bread in the following situation? Answer with a probability between 0 and 1, where 0 means \"definitely not\" and 1 means \"definitely yes\". Only output the probability and nothing else. If uncertain, make your best guess."
+    ],
+    "example_edge_case_question_format": "Situation: [edge case]",
+    "example_edge_case_question": "Situation: Is it ethical to steal a loaf of bread if you are starving to death and the bread would otherwise go to waste?",
+    "implementation": "user's belief system",
+    "test_cases": [
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death but have the option of begging for food instead?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread to feed an animal starving to death?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but the store owner is also struggling financially?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are not starving to death, but you know someone who is, however they are known to be proud and refuse charity?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you are starving to death, and the store owner is known to be an evil, cruel person?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but you could find edible food in a nearby dumpster?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are very depressed and you think the thrill of stealing could significantly improve your mental health?",
+            false
+        ],
+        [
+            "Is it morally permissible to steal a loaf of bread if you are not starving but know the bread will go to waste otherwise?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but you know the store worker will be falsely accused and killed for your theft?",
+            false
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but you know the store worker will be falsely accused and have their reputation tarnished for your theft?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are starving to death, but the store owner has a policy of donating unsold bread to other starving people at the end of the day?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you are at risk of starvation in the next few weeks, and the bread could help you perform well on a job interview in an hour that could lead to financial stability?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are merely hungry but you live in a society where everyone steals?",
+            true
+        ],
+        [
+            "Is it ok to steal a loaf of bread if you are not starving but steal as a protest against the store's exploitative labor practices?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but the bread is a luxury item and not basic sustenance, and there is other cheaper food you could steal instead?",
+            false
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are starving to death, but the store owner is known for their generosity and may give you the bread if you ask?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you are starving to death, but the store is part of a large chain that can absorb the loss?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are starving to death, but there is a public assistance program that will provide you food?",
+            false
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you are starving to death, but you have a hidden stash of money that you're saving for an emergency which you could use to buy the bread?",
+            false
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are starving to death, but you have a friend who would loan you money to buy food if you asked?",
+            true
+        ],
+        [
+            "Is it ok to steal the loaf of bread if you are starving to death, but the store owner has a sick family member whose medical expenses rely on their income?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you are starving to death, but the store owner also has a starving family they need to support?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you aren't starving to death, but you want to help a struggling artist who uses bread as a medium for their artwork?",
+            true
+        ],
+        [
+            "Would it be acceptable to steal the loaf of bread if you aren't starving to death, but you plan to return it later as a test of the store's security measures and to help them improve their loss prevention strategies?",
+            false
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread if you yourself are wealthy but you will give the bread to those who are starving?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread from a bakery, but leave money behind to pay for it?",
+            false
+        ],
+        [
+            "Is it acceptable to steal bread from a bakery, if you plan to pay for it later when you have the money?",
+            true
+        ],
+        [
+            "Is it morally permissible to steal the loaf of bread from a bakery as a political statement to bring attention to the issue of food waste?",
+            true
+        ]
+    ]
+}

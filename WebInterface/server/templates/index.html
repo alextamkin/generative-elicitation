@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Elicitation Study</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 30px;
+        }
+
+        #chat-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message {
+            flex-grow: 1;
+        }
+
+        #conversation {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            max-width: 600px;
+        }
+
+        #instructions {
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: #4BAF46; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .user-message,
+        .assistant-message {
+            background-color: white;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 5px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            border: 1px solid #ccc;
+            align-self: flex-end;
+        }
+
+        .assistant-message {
+            border: 1px solid #cce5ff;
+            background-color: #e6f7ff;
+            align-self: flex-start;
+        }
+
+        #evaluation_form {
+            flex: 1;
+            background-color: #eee;
+        }
+
+        .matrix-container {
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+
+        .matrix-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 10px;
+        }
+
+        .matrix-row.error {
+        background-color: #ffe6e6;
+        }
+
+        .matrix-header {
+        font-weight: bold;
+        }
+
+        .matrix-email {
+        flex: 1;
+        }
+
+        .matrix-radio {
+        padding: 0 10px;
+        }
+
+        .matrix-explanation {
+        flex: 1;
+        }
+
+        .matrix-radio input[type="radio"] {
+        margin-right: 5px;
+        }
+
+        .matrix-explanation input[type="text"] {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        }
+
+        #evaluation_reference_query_answers {
+            flex: 1;
+            flex-direction: column;
+            /* gap: 10px;
+            margin-bottom: 15px;
+            max-width: 600px; */
+            padding: 10px;
+            background-color: #ccc;
+            margin: 10px;
+        }
+
+        #instructions-evaluation {
+            margin-bottom: 15px;
+        }
+
+        #chat {
+            background-color: #eee;
+        }
+
+        #timer {
+            margin: 15px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: #ffe6e6;
+            padding: 10px;
+            font-size: large;
+            /* font-weight: bold; */
+            border: 3px solid black;
+            border-radius: 5px;
+            width: 350px;
+        }
+
+        /* style range */
+        input[type=range] {
+            width: 100%;
+            max-width: 100%;
+            margin-left: 0;
+        }
+
+        /* style datalist */
+        input[type=range] + datalist {
+            display: block;
+            margin-top: -4px;
+            margin-bottom: 30px;
+        }
+        input[type=range] + datalist option {
+            display: inline-block;
+            width: calc((100% - 2.5em) / (var(--list-length) - 1));
+            text-align: center;
+        }
+        input[type=range] + datalist option:first-child {
+            width: calc((100% - 2.5em) / ((var(--list-length) - 1) * 2) + 6px);
+            text-align: left;
+        }
+        input[type=range] + datalist option:last-child {
+            width: calc((100% - 2.5em) / ((var(--list-length) - 1) * 2) + 6px);
+            text-align: right;
+        }
+
+        .right{
+            float:right;
+            margin-top: 15px;
+        }
+
+        .left{
+            float:left;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Task Elicitation Study</h1>
+    <div id="instructions">
+        <!-- Your task is to specify rules for email validation to the chatbot. The chatbot will ask you questions regarding the rules, to which you should respond accurately. -->
+        By answering the following questions, you are participating in a study being performed by computer scientists in the
+        MIT Department of Electrical Engineering and Computer Science and the Stanford Computer Science Department.
+        If you have questions about this research, please contact Belinda Li at bzl@mit.edu or Alex Tamkin at atamkin@stanford.edu.
+        You must be at least 18 years old to participate. Your participation in this research is voluntary.
+        You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences.
+        Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.
+    </div>
+    <div id="login_page">
+        To start, paste your prolific ID here:
+        <input type="text" id="prolific_id" name="prolific_id" required placeholder="Prolific ID">
+        <button id="login" style="display:block;">Login</button>
+    </div>
+    <div id="start_page" style="display: none;">
+        <button id="start">Start</button>
+    </div>
+    <div id="generative_al_task" style="display: none;">
+        <div id="timer">
+            <b>Timer:</b> <span id="timer_value"></span>
+        </div>
+        <div id="generative_al_task_chat" style="display: none;">
+            <div id="conversation"></div>
+            <div id="typing-message" style="color: gray">Chatbot is typing...</div>
+            <form id="chat-form">
+                <!-- <input type="hidden" id="conversation_history" name="conversation_history"> -->
+                <input type="text" id="message" name="message" required placeholder="Your message..." disabled="true">
+                <button type="submit" id="message_submit" disabled="true">Send</button>
+            </form>
+            <br/>
+        </div>
+        <div id = "generative_al_task_prompt" style="display: none;">
+            <form id="prompt-form">
+                <!-- <input type="hidden" id="conversation_history" name="conversation_history"> -->
+                <textarea id="prompt" name="prompt" rows="25" cols="100"></textarea>
+            </form>
+            <button type="submit" id="prompt_submit">Done</button>
+            <br/>
+        </div>
+        <!-- <button id="done" style="background-color: #E74556;">Finish Conversation</button> -->
+    </div>
+    <div style="display: none;" id="feedback_intermediate">
+        <form id="feedback_intermediate_form">
+            <div>How mentally demanding was <span id="interm_q1_chat" style="display: none;">interacting with the chatbot</span><span id="interm_q1_prompt" style="display: none;">writing your answer</span>?</div>
+                <span class="left">Very Low</span><span class="right">Very High</span>
+                <input type="range" min="1" max="7" id="feedback_challenge" name="feedback_challenge" list="feedback_challenge_datalist"/>
+                <datalist id="feedback_challenge_datalist" style="--list-length: 7;">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </datalist>
+            <br>
+            <div id="interm_q2_chat" style="display: none;">
+                <div>To what extent did the chatbot raise issues or aspects about your preferences that you hadn't previously considered?</div>
+                    <span class="left">Very Little</span><span class="right">Very Much</span>
+                    <input type="range" min="1" max="7" id="feedback_new_issues_interaction" name="feedback_new_issues_interaction" list="feedback_new_issues_interaction_datalist"/>
+                    <datalist id="feedback_new_issues_interaction_datalist" style="--list-length: 7;">
+                        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                    </datalist>
+                <br>
+            </div>
+            <div id="interm_q2_prompt" style="display: none;"></div>
+            <div>How comprehensively do you feel <span id="interm_q3_chat" style="display: none;">the chatbot's questions</span><span id="interm_q3_prompt" style="display: none;">your answer</span> characterized your preferences about the task?</div>
+                <span class="left">Very Poorly</span><span class="right">Very Well</span>
+                <input type="range" min="1" max="7" id="feedback_interaction_coverage_pretest" name="feedback_interaction_coverage_pretest" list="feedback_interaction_coverage_pretest_datalist"/>
+                <datalist id="feedback_interaction_coverage_pretest_datalist" style="--list-length: 7;">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </datalist>
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <div style="display: none; flex-direction: row;" id="evaluation">
+        <form id="evaluation_form">
+            <!-- make this a new page -->
+            <div class="matrix-container" id="test_samples">
+                <div class="matrix-row matrix-header">
+                  <div class="matrix-email">Test Case</div>
+                  <div class="matrix-radio">Yes</div>
+                  <div class="matrix-radio">No</div>
+                  <div class="matrix-explanation">Explanation (Optional)</div>
+                </div>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="evaluation_reference_query_answers">
+            <div style="font-weight: bold;">Your Response(s)</div>
+            <div style="font-weight: bold; color: red">Your submitted response(s) are provided for reference, but please make decisions based on your present intuition, not strictly based on these responses.</div>
+            <ol id="evaluation_reference_query_answers_list"></ol>
+        </div>
+    </div>
+    <div style="display: none;" id="feedback_final">
+        <form id="feedback_final_form">
+            <!-- <div style="font-weight: bold;">Feedback Form</div> -->
+            <br>
+            <div>After seeing the examples in the <i>second</i> part of the task, how well do you feel <span id="final_q1_chat" style="display: none;">the chatbot</span><span id="final_q1_prompt" style="display: none;">the answer you wrote</span> (in the first part of the task) covered the important issues or aspects of these examples?</div>
+                <span class="left">Very Poorly</span><span class="right">Very Well</span>
+                <input type="range" min="1" max="7" id="feedback_interaction_coverage_posttest" name="feedback_interaction_coverage_posttest" list="feedback_interaction_coverage_posttest_datalist"/>
+                <datalist id="feedback_interaction_coverage_posttest_datalist" style="--list-length: 7;">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </datalist>
+            <br>
+            <div>When performing the <i>second</i> part of the task, to what extent did you refer back to your <span id="final_q2_chat" style="display: none;">conversation history</span><span id="final_q2_prompt" style="display: none;">answer</span> from the first part of the task?</div>
+                <span class="left">Very Little</span><span class="right">Very Much</span>
+                <input type="range" min="1" max="7" id="feedback_testcase_use_history" name="feedback_testcase_use_history" list="feedback_testcase_use_history_datalist"/>
+                <datalist id="feedback_testcase_use_history_datalist" style="--list-length: 7;">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </datalist>
+            <br>
+            <div>How much experience have you had (if any) with interacting with language models (e.g. ChatGPT, GPT4, etc.)?</div>
+                <span class="left">Very Little</span><span class="right">Very Much</span>
+                <input type="range" min="1" max="7" id="feedback_lm_experience" name="feedback_lm_experience" list="feedback_lm_experience_datalist"/>
+                <datalist id="feedback_lm_experience_datalist" style="--list-length: 7;">
+                    <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option>
+                </datalist>
+            <br>
+            <div>Do you have any other feedback about the task?</div>
+            <textarea id="feedback_other" name="feedback_other" rows="10" cols="100"></textarea>
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <!-- <div style="display: none;" id="evaluation_done">
+        <div style="font-weight: bold;">Thank you for your participation!</div>
+    </div> -->
+
+    <script>
+
+        var prolificID;
+        var lastAssistantMessageTime;
+        var lastUserMessageTime;
+        var conversationTaskStartTime;
+        var lastTurnType;
+        var queryMode;  // either "prompt" or "chat"
+        var evalPrompt;
+
+        async function populateTestSamples(testSamples) {
+            // populate test samples
+            // <div class="matrix-row">
+            //     <div class="matrix-email">email1</div>
+            //     <div class="matrix-radio"><input type="radio" name="email1" value="yes"></div>
+            //     <div class="matrix-radio"><input type="radio" name="email1" value="no"></div>
+            //     <div class="matrix-explanation"><input type="text" name="email1-explanation"></div>
+            // </div>
+            const testSamplesElement = document.getElementById("test_samples");
+            var testSampleIdx = 0;
+            testSamples.forEach((sample) => {
+                const row = document.createElement("div");
+                row.className = "matrix-row";
+                const email = document.createElement("div");
+                email.className = "matrix-email";
+                email.innerHTML = sample.replace(/\n/g, '<br>');
+                row.appendChild(email);
+
+                const yesRadio = document.createElement("div");
+                yesRadio.className = "matrix-radio";
+                const yesRadioInput = document.createElement("input");
+                yesRadioInput.type = "radio";
+                yesRadioInput.name = `test-case-${testSampleIdx}`;
+                yesRadioInput.value = "yes";
+                yesRadio.appendChild(yesRadioInput);
+                row.appendChild(yesRadio);
+
+                const noRadio = document.createElement("div");
+                noRadio.className = "matrix-radio";
+                const noRadioInput = document.createElement("input");
+                noRadioInput.type = "radio";
+                noRadioInput.name = `test-case-${testSampleIdx}`;
+                noRadioInput.value = "no";
+                noRadio.appendChild(noRadioInput);
+                row.appendChild(noRadio);
+
+                const explanation = document.createElement("div");
+                explanation.className = "matrix-explanation";
+                const explanationInput = document.createElement("input");
+                explanationInput.type = "text";
+                explanationInput.name = `test-case-${testSampleIdx}-explanation`;
+                explanation.appendChild(explanationInput);
+                row.appendChild(explanation);
+                testSamplesElement.appendChild(row);
+
+                testSampleIdx += 1;
+            });
+        }
+
+        async function getNextPrompt() {
+            // get next prompt from server
+            let response = await fetch("/get_next_prompt", {
+                method: "POST",
+                body: makeServerRequestBody(false),
+            });
+            let data = await response.json();
+            // check if null
+            if (data.hasOwnProperty("error")) {
+                let textNotice = document.createTextNode(`Error: ${data["error"]}`);
+                let textWrapper = document.createElement("div");
+                textWrapper.appendChild(textNotice);
+                document.getElementById("login_page").appendChild(textWrapper);
+
+                let continueButton = document.createElement("button");
+                continueButton.innerHTML = "This is intentional. Continue.";
+                continueButton.addEventListener("click", function() {
+                    let prompt = data["prompt"];
+                    let testSamples = data["test_samples"];
+                    evalPrompt = data["evaluation_prompt"];
+                    queryMode = data["mode"];
+
+                    prompt = prompt.replace(/\n/g, '<br><br>')
+                    document.getElementById("instructions").innerHTML = prompt;
+                    populateTestSamples(testSamples);
+                    document.getElementById("start_page").style.display = "block";
+                    document.getElementById("login_page").style.display = "none";
+                    // await startNewSession();
+                    prolificID = document.getElementById("prolific_id").value;
+                });
+                let continueWrapper = document.createElement("div");
+                continueWrapper.appendChild(continueButton);
+                document.getElementById("login_page").appendChild(continueWrapper);
+
+                let backButton = document.createElement("button");
+                backButton.innerHTML = "I made a mistake. Try again.";
+                backButton.addEventListener("click", function() {
+                    document.getElementById("login_page").removeChild(textWrapper);
+                    document.getElementById("login_page").removeChild(continueWrapper);
+                    document.getElementById("login_page").removeChild(backWrapper);
+                    document.getElementById("login").style.display = "block";  // show login button
+                });
+                let backWrapper = document.createElement("div");
+                backWrapper.appendChild(backButton);
+                document.getElementById("login_page").appendChild(backWrapper);
+
+                // hide login button
+                document.getElementById("login").style.display = "none";
+                return false;
+            }
+
+            let prompt = data["prompt"];
+            evalPrompt = data["evaluation_prompt"];
+            let testSamples = data["test_samples"];
+            queryMode = data["mode"];
+
+            prompt = prompt.replace(/\n/g, '<br><br>')
+            document.getElementById("instructions").innerHTML = prompt;
+            populateTestSamples(testSamples);
+            return true;
+        }
+
+        function getConversation() {
+            // convert conversation to JSON
+            const conversation = [];
+            document.getElementById("conversation").childNodes.forEach((node) => {
+                console.log(node.className);
+                conversation.push({"sender": node.className.split("-")[0], "message": node.innerHTML});
+            });
+            return JSON.stringify(conversation);
+        }
+
+        function getCurrentUserMessage() {
+            if (queryMode == "prompt")
+                return document.getElementById("prompt").value;
+            else {
+                return document.getElementById("message").value;
+            }
+        }
+
+        function makeServerRequestBody(submitUserMessage=true) {
+            const conversation = getConversation();
+            const data = new FormData();
+            data.append("conversation", conversation);
+            data.append("prolific_id", prolificID);
+            if (submitUserMessage) {
+                const user_message = getCurrentUserMessage();
+                data.append("user_message", user_message);
+                data.append("last_assistant_message_display_time", lastAssistantMessageTime);
+                data.append("last_user_message_submission_time", lastUserMessageTime);
+            }
+            return data;
+        }
+        
+        function addNewTurn(text, className) {
+            text = text.replace(/\n/g, '<br>')
+            const chatBubble = document.createElement("div");
+            chatBubble.classList.add(className);
+            chatBubble.innerHTML = text;
+            document.getElementById("conversation").appendChild(chatBubble);
+            
+            let qaList;
+            if (className == "user-message") {
+                qaList = document.getElementById("evaluation_reference_query_answers_list").lastChild;
+                qaList.innerHTML = `${qaList.innerHTML}<br><span style="color: blue">${text}</span>`;
+                document.getElementById("typing-message").innerHTML = "Chatbot is typing...";
+                document.getElementById("message").disabled = true;
+                document.getElementById("message_submit").disabled = true;
+            } else {
+                qaList = document.createElement("li");
+                qaList.innerHTML = `${text}`;
+                document.getElementById("typing-message").innerHTML = "";
+                document.getElementById("message").disabled = false;
+                document.getElementById("message_submit").disabled = false;
+            }
+            document.getElementById("evaluation_reference_query_answers_list").appendChild(qaList);
+            lastTurnType = className;
+        }
+
+        function addPrompt(prompt) {
+            document.getElementById("evaluation_reference_query_answers").innerHTML += prompt.replace(/\n/g, '<br>');
+        }
+
+        async function askInitialQuestion() {
+            console.log("Asking initial question: " + makeServerRequestBody(false));
+            // initialize login
+            const response = await fetch("/update", {
+                method: "POST",
+                body: makeServerRequestBody(false),
+            });
+            const data = await response.json();
+
+            // Add assistant message to the conversation
+            addNewTurn(data.response, "assistant-message");
+            lastAssistantMessageTime = Date.now();
+            conversationTaskStartTime = Date.now();
+        }
+
+        // document.addEventListener("DOMContentLoaded", async () => {
+        //     await startNewSession();
+        // });
+        
+        document.getElementById("login").addEventListener("click", async (e) => {
+            prolificID = document.getElementById("prolific_id").value;
+            let success = await getNextPrompt();
+            console.log(`success: ${success}`);
+            if (success) {
+                document.getElementById("start_page").style.display = "block";
+                document.getElementById("login_page").style.display = "none";
+                // await startNewSession();
+            }
+        });
+
+        document.getElementById("start").addEventListener("click", async (e) => {
+            document.getElementById("start_page").style.display = "none";
+            document.getElementById("generative_al_task").style.display = "block";
+            if (queryMode == "chat") {
+                document.getElementById("generative_al_task_chat").style.display = "block";
+                await askInitialQuestion();
+            } else {
+                document.getElementById("generative_al_task_prompt").style.display = "block";
+                lastAssistantMessageTime = Date.now();
+                conversationTaskStartTime = Date.now();
+            }
+        });
+
+        document.getElementById("chat-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            lastUserMessageTime = Date.now()
+            const messageInput = document.getElementById("message");
+            const message = messageInput.value;
+
+            const serverRequestBody = makeServerRequestBody(true);
+
+            // Add user message to the conversation
+            addNewTurn(message, "user-message");
+            messageInput.value = ""; // Clear the input field after sending the message
+
+            if (Date.now() - conversationTaskStartTime > 5 * 60 * 1000) {
+                serverRequestBody.append("time_up", true);
+            }
+
+            const response = await fetch("/update", {
+                method: "POST",
+                body: serverRequestBody,
+            });
+            const data = await response.json();
+
+            // Submit the conversation if the assistant responds with an empty message or if the conversation has been going on for 5 minutes
+            if (data.response == null || Date.now() - conversationTaskStartTime > 5 * 60 * 1000) {
+                submit_conversation();
+            } else {
+                // Add assistant message to the conversation
+                addNewTurn(data.response, "assistant-message");
+                lastAssistantMessageTime = Date.now();
+            }
+        });
+
+        async function submit_conversation() {
+            if (document.getElementById("generative_al_task").style.display == "none") {
+                // already submitted
+                return;
+            }
+            await fetch("/save", {
+                method: "POST",
+                body: makeServerRequestBody(false),
+            });
+            // TODO: redirect to the next page
+            document.getElementById("generative_al_task").style.display = "none";
+            document.getElementById("feedback_intermediate").style.display = "block";
+            if (queryMode == "chat") {
+                document.getElementById("instructions").innerHTML = "Please answer the following questions about the conversation you just had with the chatbot.";
+            } else {
+                document.getElementById("instructions").innerHTML = "Please answer the following questions about the answer you just wrote.";
+            }
+            document.getElementById(`interm_q1_${queryMode}`).style.display = "inline";
+            document.getElementById(`interm_q2_${queryMode}`).style.display = "block";
+            document.getElementById(`interm_q3_${queryMode}`).style.display = "inline";
+        }
+
+        document.getElementById("prompt_submit").addEventListener("click", async (e) => {
+            e.preventDefault();
+            lastUserMessageTime = Date.now();
+            const prompt = document.getElementById("prompt").value;
+            addPrompt(prompt);
+
+            const serverRequestBody = makeServerRequestBody(true);
+            serverRequestBody.append("time_up", true);
+            await fetch("/update", {
+                method: "POST",
+                body: serverRequestBody,
+            });
+            submit_conversation();
+            // await fetch("/save", {
+            //     method: "POST",
+            //     body: makeServerRequestBody(false),
+            // });
+            // console.log("saved");
+            // // document.getElementById("generative_al_task").style.display = "none";
+            // document.getElementById("evaluation").style.display = "flex";
+            // document.getElementById("instructions").innerHTML = `
+            //     <br><br>Please label the following examples. Optionally, you may provide an explanation for your decision for each example.<br><br>
+            //     <b>Important:</b> Your submitted answer is provided for reference, but please make decisions based on your present intuition, not strictly based on how you wrote your answer.
+            // `;
+            // document.getElementById("evaluation").style.display = "none";
+            // document.getElementById("feedback_final").style.display = "block";
+            // document.getElementById("instructions").innerHTML = "Please answer the following questions about the task as a whole.";
+        });
+
+        // document.getElementById("done").addEventListener("click", submit_conversation);
+
+        document.getElementById("evaluation_form").addEventListener('submit', async (e) => {
+            event.preventDefault();
+            
+            let form = e.target
+            let formData = new FormData(form);
+
+            // check if all filled
+            let hasErrors = false;
+            let testSamples = document.getElementById("test_samples").children;
+            for (sample of testSamples) {
+                if (sample.className.includes('matrix-header')) {
+                    continue;
+                }
+                let yesRadio = sample.querySelector(`input[value="yes"]`);
+                let noRadio = sample.querySelector(`input[value="no"]`);
+                
+                if (!yesRadio.checked && !noRadio.checked) {
+                    console.log("has error");
+                    hasErrors = true;
+                    sample.classList.add('error');
+                } else {
+                    sample.classList.remove('error');
+                }
+            };
+            
+            if (hasErrors) {
+                alert('Please label all test cases as "yes" or "no".');
+            } else {
+                // if all filled, submit
+                formData.append("prolific_id", prolificID);
+                console.log(formData)
+                
+                fetch('/submit_evaluation', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Form submitted successfully:');
+                    console.log(data);
+                    // Redirect to prolific completion page
+                    document.getElementById("evaluation").style.display = "none";
+                    document.getElementById("feedback_final").style.display = "block";
+                    document.getElementById(`final_q1_${queryMode}`).style.display = "inline";
+                    document.getElementById(`final_q2_${queryMode}`).style.display = "inline";
+                    document.getElementById("instructions").innerHTML = "Please answer the following questions about the task as a whole.";
+                })
+                .catch(error => {
+                    console.error('Error submitting form:', error);
+                });
+            }
+        });
+
+        document.getElementById("feedback_final_form").addEventListener('submit', async (e) => {
+            event.preventDefault();
+            
+            let form = e.target;
+            let formData = new FormData(form);
+            console.log(formData);
+
+            formData.append("prolific_id", prolificID);
+            
+            fetch('/submit_feedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Form submitted successfully:');
+                console.log(data);
+                // Redirect to prolific completion page
+                // window.location.replace("https://app.prolific.co/submissions/complete?cc=CSM3GYA9");
+                // window.location.replace("https://app.prolific.co/submissions/complete?cc=C1BHMER6");
+                window.location.replace("https://app.prolific.co/submissions/complete?cc=C1MBZQXU");
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+            });
+        });
+
+        document.getElementById("feedback_intermediate_form").addEventListener('submit', async (e) => {
+            event.preventDefault();
+            
+            let form = e.target;
+            let formData = new FormData(form);
+            console.log(formData);
+
+            formData.append("prolific_id", prolificID);
+            
+            fetch('/submit_feedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Form submitted successfully:');
+                console.log(data);
+                document.getElementById("feedback_intermediate").style.display = "none";
+                document.getElementById("evaluation").style.display = "flex";
+                document.getElementById("instructions").innerHTML = `
+                    ${evalPrompt} Optionally, you may provide an explanation for your decision for each example.<br><br>
+                `;
+                // Your dialog history is provided for reference, but please make decisions based on your present intuition, not strictly based on how you answered the questions in the dialog.
+                // `;
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+            });
+        });
+
+        // Display timer
+        var timer = setInterval(function() {
+            var now = new Date().getTime();
+            var timespent = now - conversationTaskStartTime;
+            
+            // Calculating the days, hours, minutes and seconds left
+            // var days = Math.floor(timespent / (1000 * 60 * 60 * 24));
+            // var hours = Math.floor((timespent % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((timespent % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((timespent % (1000 * 60)) / 1000);
+                
+            // Result is output to the specific element
+            // var timeToDisplay = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+            var timeToDisplay = minutes + "m " + seconds + "s ";
+            document.getElementById("timer_value").innerHTML = timeToDisplay;
+                
+            // Display the message when countdown is over
+            if (timespent > 5 * 60 * 1000) {
+                if (lastTurnType == "assistant-message" || queryMode == "prompt") {
+                    // waiting for user to submit
+                    clearInterval(timer);
+                    if (queryMode == "prompt") {
+                        document.getElementById("timer_value").innerHTML = "Your 5 minutes are up. Please finish up and submit what you have. Once you submit, you will be redirected to the next page.";
+                    } else {
+                        document.getElementById("timer_value").innerHTML = "This will be the last question. Please finish and submit your response to this question. Once you submit, you will be redirected to the next page.";
+                    }
+                } else {
+                    // submit automatically
+                    submit_conversation();
+                }
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>
