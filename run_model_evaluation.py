@@ -12,6 +12,7 @@ import os
 import json
 from tqdm import tqdm
 from utils import update_metrics, update_test_responses
+import pandas as pd
 
 
 AGENT_NAME_TO_CLASS = {
@@ -178,7 +179,7 @@ def main(args):
 class ArgumentParser(Tap):
     num_interactions: int = 5  # The number of interactions between the AL agent and the oracle.
     engine: str = "gpt-4"  # The OpenAI engine to use (e.g. gpt-3.5-turbo, gpt-4).
-    agent: str = "edge_cases"  # The active learning agent to use (e.g. questions, edge_cases, pool, saved_file).
+    agent: str = "edge_cases"  # The active learning agent to use (e.g. questions_open, questions_yn, edge_cases, pool_diversity, pool_random, saved_file).
     eval_condition: str = "per_turn"  # When to evaluate the agent (e.g. at_end, per_minute, per_turn, per_turn_up_to_5).
     pool_diversity_num_clusters: int = 15  # The number of clusters to use for diversity sampling.
     task: str = "email_regex"  # The target format we are designing for experiments (e.g. email_regex, moral_reasoning, website_preferences).

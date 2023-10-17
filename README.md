@@ -46,6 +46,9 @@ We are not releasing the human-model transcripts we collected at this time due t
 Given a set of elicitation transcripts and gold human responses (produced by running the elicitation interface above), we can evaluate how well a model is able to make decisions by running the command:
 
 ```bash
+# remember to set your OpenAI API key!
+export OPENAI_API_KEY = <insert-your-API-key-here>
+# run evaluation
 python run_human_evaluation.py \
     --saved_annotations_dir <saved_annotations_dir> \
     --task [website_preferences|moral_reasoning|email_regex] \
@@ -53,10 +56,10 @@ python run_human_evaluation.py \
     --engine <engine>
 ```
 where:
-* `--saved_annotations_dir` points to the directory where the human transcripts are saved (e.g. `annotations_gpt-4/`)
-* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation)
+* `--saved_annotations_dir` points to the directory where the human transcripts are saved (e.g. `annotations_gpt-4/`).
+* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation).
 * `--eval_condition` refers to how often we produce evaluate the intermediate results of each transcript, with `per_turn` meaning we evaluate the transcript after each turn, `per_minute` meaning we evaluate the transcript only after each minute of interaction, and `at_end` meaning we only evaluate the transcript at the very end.
-* `--engine` refers to which GPT model we're using (e.g. `gpt-4`)
+* `--engine` refers to which GPT model we're using (e.g. `gpt-4`).
 
 This prompts a language model to make decisions based on the contents of the transcript and compares them to the human-provided decisions on those same examples.
 
@@ -65,6 +68,9 @@ This prompts a language model to make decisions based on the contents of the tra
 Instead of querying real humans, we can also use a LM to *simulate* human preferences. To do so, we prompt GPT4 with a set of persona prompts (which can be found in `gpt_prompts/`). You can run the elicitation loop with simulated humans by running the command:
 
 ```bash
+# remember to set your OpenAI API key!
+export OPENAI_API_KEY = <insert-your-API-key-here>
+# run evaluation
 python run_model_evaluation.py \
     --engine <engine> \
     --agent [questions|edge_cases|pool] \
@@ -74,9 +80,9 @@ python run_model_evaluation.py \
 ```
 
 where:
-* `--engine` refers to which GPT model we're using (e.g. `gpt-4`)
-* `--agent` refers to which elicitation method we use to query the simulated human, among generative questions, generative edge cases (i.e. generative active learning), and pool-based active learning (also used for supervised learning, when used in conjunction with random sampling)
+* `--engine` refers to which GPT model we're using (e.g. `gpt-4`).
+* `--agent` refers to which elicitation method we use to query the simulated human, among `questions_open` (generating open-ended questions), `questions_yn` (generating yes-or-no questions), `edge_cases` (generative active learning), `pool_diversity` (pool-based active learning with diversity sampling), `pool_random` (pool-based active learning with random sampling, used as a stand-in for supervised learning).
 * `--eval_condition` refers to how often we produce evaluate the intermediate results of each transcript, with `per_turn` meaning we evaluate the transcript after each turn, `per_minute` meaning we evaluate the transcript only after each minute of interaction, and `at_end` meaning we only evaluate the transcript at the very end.
-* `--pool_diversity_num_clusters` refers to the number of clusters we use for pool-based active learning with diversity sampling
-* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation)
+* `--pool_diversity_num_clusters` refers to the number of clusters we use for pool-based active learning with diversity sampling.
+* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation).
 

@@ -1,2 +1,4 @@
 __pycache__/
 *cache*.jsonl
+model_human_results/
+model_model_results/

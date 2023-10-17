@@ -4,7 +4,7 @@ import sys
 from tap import Tap
 
 from from_saved_file_agent import FromSavedFileAgent
-from main import run_problem_instance
+from run_model_evaluation import run_problem_instance
 import json
 import os
 from tqdm import tqdm
