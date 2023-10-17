@@ -29,13 +29,16 @@ A sample configuration file can be found in [`annotations_gpt-4/experiment_type_
 Note that supervised learning and pool-based active learning require access to an existing pool, which is only available for `website_preferences` at the moment.
 
 
-To run the user interface that elicits humans for their preferences, use:
+To launch the user interface that elicits humans for their preferences, run:
 ```bash
+# remember to set your OpenAI API key!
+export OPENAI_API_KEY = <insert-your-API-key-here>
+# run the server
 python WebInterface/server/webserver.py
 ```
 The interface will randomly chooses a domain and elicitation method from among those specified in file `annotations_gpt-4/experiment_to_prolific_ids.json` and query the user for their preferences in that domain, using the elicitation method. The resulting transcript is saved under `annotations_gpt-4/`.
 
-We are not releasing the human-model transcripts we collected at this time due to privacy concerns. However, some sample transcripts can be found in the folder.
+We are not releasing the human-model transcripts we collected at this time due to privacy concerns. However, a sample transcript can be found in the [`annotations_gpt-4/`](https://github.com/alextamkin/generative-elicitation/tree/main/annotations_gpt-4) folder in this repository. You may also create your own transcripts using the above interface.
 
 
 ## Evaluating elicitation methods

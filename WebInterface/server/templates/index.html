@@ -189,7 +189,6 @@
 <body>
     <h1>Task Elicitation Study</h1>
     <div id="instructions">
-        <!-- Your task is to specify rules for email validation to the chatbot. The chatbot will ask you questions regarding the rules, to which you should respond accurately. -->
         By answering the following questions, you are participating in a study being performed by computer scientists in the
         MIT Department of Electrical Engineering and Computer Science and the Stanford Computer Science Department.
         If you have questions about this research, please contact Belinda Li at bzl@mit.edu or Alex Tamkin at atamkin@stanford.edu.
@@ -213,7 +212,6 @@
             <div id="conversation"></div>
             <div id="typing-message" style="color: gray">Chatbot is typing...</div>
             <form id="chat-form">
-                <!-- <input type="hidden" id="conversation_history" name="conversation_history"> -->
                 <input type="text" id="message" name="message" required placeholder="Your message..." disabled="true">
                 <button type="submit" id="message_submit" disabled="true">Send</button>
             </form>
@@ -221,7 +219,6 @@
         </div>
         <div id = "generative_al_task_prompt" style="display: none;">
             <form id="prompt-form">
-                <!-- <input type="hidden" id="conversation_history" name="conversation_history"> -->
                 <textarea id="prompt" name="prompt" rows="25" cols="100"></textarea>
             </form>
             <button type="submit" id="prompt_submit">Done</button>
@@ -260,7 +257,6 @@
     </div>
     <div style="display: none; flex-direction: row;" id="evaluation">
         <form id="evaluation_form">
-            <!-- make this a new page -->
             <div class="matrix-container" id="test_samples">
                 <div class="matrix-row matrix-header">
                   <div class="matrix-email">Test Case</div>
@@ -279,7 +275,6 @@
     </div>
     <div style="display: none;" id="feedback_final">
         <form id="feedback_final_form">
-            <!-- <div style="font-weight: bold;">Feedback Form</div> -->
             <br>
             <div>After seeing the examples in the <i>second</i> part of the task, how well do you feel <span id="final_q1_chat" style="display: none;">the chatbot</span><span id="final_q1_prompt" style="display: none;">the answer you wrote</span> (in the first part of the task) covered the important issues or aspects of these examples?</div>
                 <span class="left">Very Poorly</span><span class="right">Very Well</span>
@@ -308,9 +303,6 @@
             <button type="submit">Submit</button>
         </form>
     </div>
-    <!-- <div style="display: none;" id="evaluation_done">
-        <div style="font-weight: bold;">Thank you for your participation!</div>
-    </div> -->
 
     <script>
 
@@ -319,17 +311,10 @@
         var lastUserMessageTime;
         var conversationTaskStartTime;
         var lastTurnType;
-        var queryMode;  // either "prompt" or "chat"
+        var queryMode;
         var evalPrompt;
 
         async function populateTestSamples(testSamples) {
-            // populate test samples
-            // <div class="matrix-row">
-            //     <div class="matrix-email">email1</div>
-            //     <div class="matrix-radio"><input type="radio" name="email1" value="yes"></div>
-            //     <div class="matrix-radio"><input type="radio" name="email1" value="no"></div>
-            //     <div class="matrix-explanation"><input type="text" name="email1-explanation"></div>
-            // </div>
             const testSamplesElement = document.getElementById("test_samples");
             var testSampleIdx = 0;
             testSamples.forEach((sample) => {
@@ -508,10 +493,6 @@
             lastAssistantMessageTime = Date.now();
             conversationTaskStartTime = Date.now();
         }
-
-        // document.addEventListener("DOMContentLoaded", async () => {
-        //     await startNewSession();
-        // });
         
         document.getElementById("login").addEventListener("click", async (e) => {
             prolificID = document.getElementById("prolific_id").value;
@@ -578,7 +559,6 @@
                 method: "POST",
                 body: makeServerRequestBody(false),
             });
-            // TODO: redirect to the next page
             document.getElementById("generative_al_task").style.display = "none";
             document.getElementById("feedback_intermediate").style.display = "block";
             if (queryMode == "chat") {
@@ -604,23 +584,7 @@
                 body: serverRequestBody,
             });
             submit_conversation();
-            // await fetch("/save", {
-            //     method: "POST",
-            //     body: makeServerRequestBody(false),
-            // });
-            // console.log("saved");
-            // // document.getElementById("generative_al_task").style.display = "none";
-            // document.getElementById("evaluation").style.display = "flex";
-            // document.getElementById("instructions").innerHTML = `
-            //     <br><br>Please label the following examples. Optionally, you may provide an explanation for your decision for each example.<br><br>
-            //     <b>Important:</b> Your submitted answer is provided for reference, but please make decisions based on your present intuition, not strictly based on how you wrote your answer.
-            // `;
-            // document.getElementById("evaluation").style.display = "none";
-            // document.getElementById("feedback_final").style.display = "block";
-            // document.getElementById("instructions").innerHTML = "Please answer the following questions about the task as a whole.";
         });
-
-        // document.getElementById("done").addEventListener("click", submit_conversation);
 
         document.getElementById("evaluation_form").addEventListener('submit', async (e) => {
             event.preventDefault();
@@ -693,9 +657,10 @@
                 console.log('Form submitted successfully:');
                 console.log(data);
                 // Redirect to prolific completion page
-                // window.location.replace("https://app.prolific.co/submissions/complete?cc=CSM3GYA9");
-                // window.location.replace("https://app.prolific.co/submissions/complete?cc=C1BHMER6");
-                window.location.replace("https://app.prolific.co/submissions/complete?cc=C1MBZQXU");
+                // window.location.replace("https://app.prolific.co/submissions/complete?cc=C1MBZQXU");
+                // Screen showing "submitted"
+                document.getElementById("feedback_final").style.display = "none";
+                document.getElementById("instructions").innerHTML = "Thank you for participating in our study! Your response has been recorded.";
             })
             .catch(error => {
                 console.error('Error submitting form:', error);
@@ -724,8 +689,6 @@
                 document.getElementById("instructions").innerHTML = `
                     ${evalPrompt} Optionally, you may provide an explanation for your decision for each example.<br><br>
                 `;
-                // Your dialog history is provided for reference, but please make decisions based on your present intuition, not strictly based on how you answered the questions in the dialog.
-                // `;
             })
             .catch(error => {
                 console.error('Error submitting form:', error);
@@ -738,13 +701,10 @@
             var timespent = now - conversationTaskStartTime;
             
             // Calculating the days, hours, minutes and seconds left
-            // var days = Math.floor(timespent / (1000 * 60 * 60 * 24));
-            // var hours = Math.floor((timespent % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((timespent % (1000 * 60 * 60)) / (1000 * 60));
             var seconds = Math.floor((timespent % (1000 * 60)) / 1000);
                 
             // Result is output to the specific element
-            // var timeToDisplay = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
             var timeToDisplay = minutes + "m " + seconds + "s ";
             document.getElementById("timer_value").innerHTML = timeToDisplay;
                 

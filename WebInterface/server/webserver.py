@@ -10,7 +10,6 @@ from flask import Flask, jsonify, render_template, request
 from pool_based_agent import PoolBasedAgent
 from generative_questions_agent import GenerativeQuestionsAgent
 from generative_edge_cases_agent import GenerativeEdgeCasesAgent
-from active_dialogue_agent import ActiveDialogueAgent
 import json
 import random
 
@@ -24,16 +23,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 app = Flask(__name__)
 
 
-# MAX_TURNS = 20
-# engine =  "gpt-3.5-turbo"
 ENGINE =  "gpt-4"
 
 SAVE_DIR = f"annotations_{ENGINE}"
 os.makedirs(SAVE_DIR, exist_ok=True)
-
-# Modify this line to create the generative_al_agent object
-# cache_file = f"{ENGINE}-cache.jsonl"
-# generative_al_agent = ActiveDialogueAgent(problem_instance_filename, ENGINE, openai_cache_file=None, question_type="open")
 
 query_type_to_agent = {
     "Non-interactive": "non-interactive",
@@ -42,7 +35,6 @@ query_type_to_agent = {
     "Generative edge cases": GenerativeEdgeCasesAgent,
     "Generative open-ended questions": GenerativeQuestionsAgent,
     "Generative yes/no questions": GenerativeQuestionsAgent,
-    "Open-Ended Dialogue": ActiveDialogueAgent,
 }
 
 query_type_to_instruction = {
@@ -52,7 +44,6 @@ query_type_to_instruction = {
     "Generative edge cases": "This chatbot will ask you a series of questions about %task_description%. Try to answer in a way that accurately and comprehensively conveys your preferences, such that someone reading your responses can understand and make judgments as close to your own as possible. Feel free to respond naturally (you can use commas, short phrases, etc), and press [enter] to send your response. Note that the chatbot technology is imperfect, and you are free to avoid answering any questions that are overly broad or uncomfortable. When interacting with the chatbot, please avoid asking follow-up questions or engaging in open-ended dialogue as the chatbot is unable to respond to you.\n<b>Note:</b> The chatbot will stop asking questions after 5 minutes, after which you can send your last response and you will be taken to the final part of the study.",
     "Generative open-ended questions": "This chatbot will ask you a series of questions about %task_description%. Try to answer in a way that accurately and comprehensively conveys your preferences, such that someone reading your responses can understand and make judgments as close to your own as possible. Feel free to respond naturally (you can use commas, short phrases, etc), and press [enter] to send your response. Note that the chatbot technology is imperfect, and you are free to avoid answering any questions that are overly broad or uncomfortable. When interacting with the chatbot, please avoid asking follow-up questions or engaging in open-ended dialogue as the chatbot is unable to respond to you.\n<b>Note:</b> The chatbot will stop asking questions after 5 minutes, after which you can send your last response and you will be taken to the final part of the study.",
     "Generative yes/no questions": "This chatbot will ask you a series of questions about %task_description%. Try to answer in a way that accurately and comprehensively conveys your preferences, such that someone reading your responses can understand and make judgments as close to your own as possible. Feel free to respond naturally (you can use commas, short phrases, etc), and press [enter] to send your response. Note that the chatbot technology is imperfect, and you are free to avoid answering any questions that are overly broad or uncomfortable. When interacting with the chatbot, please avoid asking follow-up questions or engaging in open-ended dialogue as the chatbot is unable to respond to you.\n<b>Note:</b> The chatbot will stop asking questions after 5 minutes, after which you can send your last response and you will be taken to the final part of the study.",
-    "Open-Ended Dialogue": "This chatbot will ask you a series of questions about %task_description%. Try to answer in a way that accurately and comprehensively conveys your preferences, such that someone reading your responses can understand and make judgments as close to your own as possible. Feel free to respond naturally (you can use commas, short phrases, etc), and press [enter] to send your response. Note that the chatbot technology is imperfect, and you are free to avoid answering any questions that are overly broad or uncomfortable. You are free to engage in an open-ended dialogue with the chatbot. You may ask follow-up questions, clarifications, or elicit opinions/thoughts from the chatbot itself. Furthermore, if the chatbot is trying to conclude the conversation before 5 minutes is up, please try to keep the conversation going by asking it to ask more questions.\n<b>Note:</b> The chatbot will stop asking questions after 5 minutes, after which you can send your last response and you will be taken to the final part of the study.",
 }
 
 
@@ -136,12 +127,8 @@ def get_next_prompt():
     prolific_id = request.form.get("prolific_id")
     error = {}
     if prolific_id in prolific_id_to_experiment_type:
-        # error
         curr_prompt = prolific_id_to_experiment_type[prolific_id]["prompt"]
         curr_query_type = prolific_id_to_experiment_type[prolific_id]["query_type"]
-        # TODO uncomment to start off from where we left off
-        # """
-        # get the experiment type that has the least number of participants
         prolific_id_to_user_responses[prolific_id] = {
             "prolific_id": prolific_id,
             "engine": ENGINE,
@@ -151,20 +138,11 @@ def get_next_prompt():
             "evaluation_results": [],
             "feedback": {},
         }
-        # """
         error = {"error": "This username already exists"}
     else:
         experiment_types_with_fewest_participants = []
         min_num_participants = float("inf")
-        # prompt_types_to_consider = ["email_regex"]
         prompt_types_to_consider = ["website_preferences"]
-        # prompt_types_to_consider = list(experiment_type_to_prolific_id.keys())
-        """ Do filtering based on email
-        if prolific_id.startswith("email"):
-            prompt_types_to_consider = ["email_regex"]
-        else:
-            prompt_types_to_consider.remove("email_regex")
-        # """
         for prompt_type in prompt_types_to_consider:
             for query_type in experiment_type_to_prolific_id[prompt_type]:
                 num_participants = len(experiment_type_to_prolific_id[prompt_type][query_type])
@@ -245,11 +223,10 @@ def update():
             "submission_time": user_submission_timestamp,
         })
     query = None
-    if not request.form.get("time_up"):   #or len(prolific_id_to_user_responses[prolific_id]) < MAX_TURNS:
+    if not request.form.get("time_up"):
         query = prolific_id_to_experiment_type[prolific_id]["agent"].generate_active_query()
         prolific_id_to_user_responses[prolific_id]["conversation_history"].append({"sender": "assistant", "message": query})
 
-    # TODO score hypotheses / save associated metadata
     return jsonify({"response": query})
 
 
@@ -269,7 +246,6 @@ def get_next_query():
     query = prolific_id_to_experiment_type[prolific_id]["agent"].generate_active_query()
     prolific_id_to_user_responses[prolific_id]["conversation_history"].append({"sender": "assistant", "message": query})
 
-    # TODO score hypotheses / save associated metadata
     return jsonify({"response": query})
 
 
