@@ -1,11 +1,9 @@
-
-import textwrap
 import json
 
 from base_active_learning_agent import BaseActiveLearningAgent
-from utils import query_api, load_openai_cache
 
 IMPLEMENTATION = "system"  #["Python regex", "system"]
+
 
 class FromSavedFileAgent(BaseActiveLearningAgent):
     """Agent that loads generated interactions (queries and answers) from a saved file."""
@@ -85,9 +83,9 @@ class FromSavedFileAgent(BaseActiveLearningAgent):
     def get_hypothesis_prompt(self, interaction_history, broken_regexes=None):
         pass
     
-    def score_test_cases(self, score_type="no_hypothesis", **kwargs):
+    def score_test_cases(self, **kwargs):
         self.last_eval_turn = len(self.interaction_history)
-        return super().score_test_cases(score_type, **kwargs)
+        return super().score_test_cases(**kwargs)
 
     def get_curr_user_timings_ms(self):
         return sum(self.turn_timings["user"][:len(self.interaction_history)])

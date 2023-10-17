@@ -2,8 +2,6 @@ from copy import deepcopy
 import glob
 
 import numpy as np
-import openai
-from matplotlib import pyplot as plt
 from tap import Tap
 
 from generative_questions_agent import GenerativeQuestionsAgent
@@ -14,11 +12,6 @@ import os
 import json
 from tqdm import tqdm
 from utils import update_metrics, update_test_responses
-import wandb
-log_wandb = False
-
-import pandas as pd
-import seaborn as sns
 
 
 AGENT_NAME_TO_CLASS = {
@@ -37,15 +30,6 @@ FILE_QUERY_TYPE_TO_NAME = {
     "Generative open-ended questions": "questions_open",
     "Non-interactive": "noninteractive",
 }
-
-COLORS = {
-    "Generative edge cases": "tab:blue",
-    "Generative yes/no questions": "tab:orange",
-    "Generative open-ended questions": "tab:green",
-    "Pool-based Active Learning": "#767676",
-    "Non-interactive": "#a5a5a5",
-}
-# def wandb_init():
 
 
 def run_problem_instance(
@@ -74,7 +58,6 @@ def run_problem_instance(
         question_type=question_type, saved_interactions_file=saved_interactions_file,
         eval_condition=eval_condition, pool_al_sampling_type=sampling_type,
         pool_diversity_num_clusters=pool_diversity_num_clusters,
-        # temperature=0.8 if agent_class == GenerativeEdgeCasesAgent else 0.0,
         temperature=temperature, base_query_type=base_query_type,
     )
     
@@ -85,30 +68,8 @@ def run_problem_instance(
             query_type += "_" + question_type
         elif query_type == "pool":
             query_type += "_" + sampling_type
-        persona = generative_al_agent.persona
-        oracle_prompt = generative_al_agent.get_oracle_prompt("[question]", question_type)
     else:
         query_type = FILE_QUERY_TYPE_TO_NAME[base_query_type]
-        persona = saved_interactions_file.split("/")[-1].split(".")[0]
-        oracle_prompt = "human"
-    if log_wandb:
-        wandb.init(
-            project="generative_al",
-            config={
-                "domain": task,
-                "query_type": query_type,
-                "persona": persona,
-                "is_human": agent_class == FromSavedFileAgent,
-                "engine": engine,
-                "seed": openai_cache_file.split("-")[-1].split(".")[0],
-                "query_prompt": generative_al_agent.get_query_prompt(),
-                "oracle_prompt": oracle_prompt,
-                "test_case_prompt": generative_al_agent.get_test_case_prompt(
-                    [("[question]", "[answer]") for _ in range(3)],
-                    ("[test_case_question]", "[test_case_answer]"),
-                ),
-            }
-        )
 
     test_xs = generative_al_agent.get_interaction_features()
     test_score, test_responses = generative_al_agent.score_test_cases()
@@ -117,10 +78,6 @@ def run_problem_instance(
     test_scores = update_metrics({}, test_score)
     start_test_scores = deepcopy(test_scores)
     all_test_responses = update_test_responses([], test_responses)
-
-    if log_wandb:
-        wandb.log(test_score)
-        wandb.log(test_xs)
 
     for i in tqdm(range(num_interactions)):
         query = generative_al_agent.generate_active_query()
@@ -135,37 +92,21 @@ def run_problem_instance(
         
         outputs_save_file.write("EVAL POINT\n")
 
-        # hypothesis_regex = generative_al_agent.generate_hypothesis()
         test_xs = generative_al_agent.get_interaction_features()
         test_score, test_responses = generative_al_agent.score_test_cases(start_metrics=start_test_scores)
         print(test_score)
         all_test_xs = update_metrics(all_test_xs, test_xs)
         test_scores = update_metrics(test_scores, test_score)
         all_test_responses = update_test_responses(all_test_responses, test_responses)
-
-        # for k, v in test_scores.items():
-        #     wandb.log(f"test_score_{k}", v)
-        # for k, v in test_xs.items():
-        #     wandb.log(f"test_feats_{k}", v)
-        # wandb.log(f"test_score", test_score)
-        # wandb.log(f"test_feats", test_xs)
-        if log_wandb:
-            wandb.log(test_score)
-            wandb.log(test_xs)
-            wandb.log({"test_responses": test_responses})
-            wandb.log({"interaction_history": generative_al_agent.interaction_history})
     
     print(test_xs)
     print(test_scores)
     outputs_save_file.write(f"===TEST RESPONSES===\n{json.dumps(all_test_responses, indent=2)}\n\n")
-    if log_wandb:
-        wandb.finish()
     
     return all_test_xs, test_scores
 
 
 def main(args):
-    wandb.login()
     if args.no_cache:
         openai_cache_file = None
     else:
@@ -177,11 +118,6 @@ def main(args):
         'correct_prob_relative', 'question_mode', 'task', 'engine', 'seed',
     ])
 
-    # setting = args.agent
-    # if args.agent == "questions":
-    #     setting += "_" + args.question_type
-    # elif args.agent == "pool":
-    #     setting += "_" + args.sampling_type
     if args.task == "website_preferences":
         question_modes = ["questions_open", "questions_yn", "edge_cases", "pool_diversity", "pool_random", "pool_uncertainty_logits"]
     else:
@@ -228,15 +164,7 @@ def main(args):
 
             outputs_save_file.write(f"===AVG TEST XS===\n{json.dumps(test_xs, indent=2)}\n\n")
             outputs_save_file.write(f"===AVG TEST SCORES===\n{json.dumps(test_scores, indent=2)}\n\n")
-    
-        # for question_mode in avg_test_scores:
-        #     for metric in avg_test_scores[question_mode]:
-        #         avg_test_scores[question_mode][metric] = np.mean(avg_test_scores[question_mode][metric], axis=0)
-        # try:
-        #     outputs_save_file.write(f"===AVG TEST SCORES===\n{json.dumps(avg_test_scores, indent=2)}\n\n")
-        # except:
-        #     breakpoint()
-        # outputs_save_file.close()
+
         for metric in avg_test_scores[question_mode]:
             print(f'All test {metric}s:', avg_test_scores[question_mode][metric])
             avg_test_scores[question_mode][metric] = np.mean(avg_test_scores[question_mode][metric], axis=0)
@@ -251,10 +179,8 @@ class ArgumentParser(Tap):
     num_interactions: int = 5  # The number of interactions between the AL agent and the oracle.
     engine: str = "gpt-4"  # The OpenAI engine to use (e.g. gpt-3.5-turbo, gpt-4).
     agent: str = "edge_cases"  # The active learning agent to use (e.g. questions, edge_cases, pool, saved_file).
-    eval_condition: str = "per_turn"
-    # question_type: str = "open"  # The type of question to ask -- for questions agent only (e.g. open, yn).
-    # sampling_type: str = "diversity"  # The type of sampling to use -- for pool agent only (e.g. diversity, random, uncertainty_logits, uncertainty_tokens).
-    pool_diversity_num_clusters: int = 5  # The number of clusters to use for diversity sampling.
+    eval_condition: str = "per_turn"  # When to evaluate the agent (e.g. at_end, per_minute, per_turn, per_turn_up_to_5).
+    pool_diversity_num_clusters: int = 15  # The number of clusters to use for diversity sampling.
     task: str = "email_regex"  # The target format we are designing for experiments (e.g. email_regex, moral_reasoning, website_preferences).
     no_cache: bool = False  # Whether to use the OpenAI cache file.
     seed: int = 0  # The random seed to use.

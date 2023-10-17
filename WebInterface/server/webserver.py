@@ -5,7 +5,6 @@ import sys
 sys.path.append('.')
 
 import openai
-import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from pool_based_agent import PoolBasedAgent
@@ -277,16 +276,7 @@ def get_next_query():
 @app.route("/save", methods=["POST"])
 def save():
     prolific_id = request.form.get("prolific_id")
-    query_type = prolific_id_to_experiment_type[prolific_id]["query_type"]
     with open(os.path.join(SAVE_DIR, f"{prolific_id}.json"), "w") as f:
-        # if query_type == "Non-interactive":
-        #     breakpoint()
-        #     user_message = request.form.get("user_message")
-        #     prolific_id_to_user_responses[prolific_id]["user_specification"] = request.form.get({
-        #         "user_message",
-        #     })
-        #     json.dump(prolific_id_to_user_responses[prolific_id], f, indent=2)
-        # else:
         json.dump(prolific_id_to_user_responses[prolific_id], f, indent=2)
     return jsonify({"response": "done"})
 

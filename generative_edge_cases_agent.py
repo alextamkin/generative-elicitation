@@ -5,6 +5,7 @@ from utils import query_api
 
 IMPLEMENTATION = "system"  #["Python regex", "system"]
 
+
 class GenerativeEdgeCasesAgent(BaseActiveLearningAgent):
     """Active learning agent that generates edge cases to identify the target regex."""
 

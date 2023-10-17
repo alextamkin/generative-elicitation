@@ -1,8 +1,6 @@
 import glob
 import sys
 
-import numpy as np
-from matplotlib import pyplot as plt
 from tap import Tap
 
 from from_saved_file_agent import FromSavedFileAgent
@@ -10,25 +8,10 @@ from main import run_problem_instance
 import json
 import os
 from tqdm import tqdm
-from scipy import stats
 import random
-import wandb
-from sklearn.metrics import auc
-from utils import average_lines
-from scipy.interpolate import interp1d
 
 import pandas as pd
-import seaborn as sns
 
-log_wandb = False
-
-colors = plt.rcParams['axes.prop_cycle'].by_key()['color']  # Get the default color cycle
-
-DO_PLOT = True
-AGENT_NAME_TO_CLASS = {
-    "saved_file": FromSavedFileAgent,
-}
-BAR_PLOT_METRIC = "correct_prob_relative"
 
 task_specific_directives = {
     "website_preferences": '\nFor this task, "yes" means the user would like the website, and "no" means the user would not like the website',
@@ -41,17 +24,8 @@ task_specific_instructions = {
     "email_regex": "asks a user about their preferences for what makes a valid format for email addresses",
 }
 
-COLORS = {
-    "Generative edge cases": "tab:blue",
-    "Generative yes/no questions": "tab:orange",
-    "Generative open-ended questions": "tab:green",
-    "Pool-based Active Learning": "#767676",
-    "Non-interactive": "#a5a5a5",
-}
 
-
-def get_saved_interaction_files_for_task(task):
-    saved_annotations_dir = "annotations_gpt-4"
+def get_saved_interaction_files_for_task(saved_annotations_dir, task):
     with open(f"{saved_annotations_dir}/experiment_type_to_prolific_id.json") as f:
         experiment_type_to_prolific_id = json.load(f)
     files_to_return = {}
@@ -63,7 +37,6 @@ def get_saved_interaction_files_for_task(task):
 
 
 def main(args):
-    wandb.login()
     if args.no_cache:
         openai_cache_file = None
     else:
@@ -91,7 +64,7 @@ def main(args):
     ])
 
     problem_instance_filename = random.choice(glob.glob(f"gpt_prompts/{args.task}/*.json"))
-    saved_interaction_files_for_task = get_saved_interaction_files_for_task(args.task)
+    saved_interaction_files_for_task = get_saved_interaction_files_for_task(args.saved_annotations_dir ,args.task)
     for question_mode in saved_interaction_files_for_task:
         print(question_mode)
         for metric in all_test_xs:
@@ -135,8 +108,6 @@ def main(args):
                 'engine': args.engine, 'seed': args.seed,
                 'interaction_id': os.path.split(saved_interactions_file)[-1][:-5],
             }
-            if (all_test_results["interaction_id"] != all_test_results["interaction_id"]).any():
-                breakpoint()
 
     for question_mode in all_test_scores["AUCROC"]:
         print(question_mode)
@@ -151,12 +122,11 @@ def main(args):
 
 
 class ArgumentParser(Tap):
-    # num_interactions: int = 20  # The number of interactions between the AL agent and the oracle.
+    saved_annotations_dir: str = "annotations_gpt-4"  # The directory where the saved annotations are stored.
     task: str = "moral_reasoning"  # The target format we are designing for experiments (e.g. email_regex, moral_reasoning, website_preferences)
     eval_condition: str = "per_minute"  # When to evaluate the agent (e.g. at_end, per_minute, per_turn, per_turn_up_to_5)
     engine: str = "gpt-4"  # The OpenAI engine to use (e.g. gpt-3.5-turbo, gpt-4).
     no_cache: bool = False  # Whether to use the OpenAI cache file.
-    batch_eval: bool = False  # Whether to batch eval (faster but less accurate)
     seed: int = 0  # The random seed to use.
     filter_trivial_preferences: bool = False  # Whether to filter out trivial preferences (e.g. all yes or all no)
 

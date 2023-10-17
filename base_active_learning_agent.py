@@ -1,9 +1,8 @@
 import json
-import os
 import re
 from abc import ABC, abstractmethod
 
-from utils import query_api, load_openai_cache, async_query_api
+from utils import query_api, load_openai_cache
 import textwrap
 from sklearn.metrics import roc_auc_score
 
@@ -32,7 +31,6 @@ class BaseActiveLearningAgent(ABC):
         self.persona_text = self.persona
 
     def get_task_description(self):
-        # TODO don't hardcode
         return "validate an email address adheres to a specific format"
 
     @staticmethod
@@ -59,48 +57,19 @@ class BaseActiveLearningAgent(ABC):
             {test_case}
             '''
         ).format(
-            # implementation=self.implementation,
             single_instance_prompt1=self.test_case_prompt[0],
             previous_examples=self.format_questions_and_answers(interaction_history),
             single_instance_prompt2=self.test_case_prompt[1],
             test_case=test_case,
         )
-        # print(hypothesis_prompt)
         return [{"role": "user", "content": hypothesis_prompt}]
     
     def generate_test_case_answer(self, test_case):
         test_case_messages = self.get_test_case_prompt(self.interaction_history, test_case)
         test_case_answer, _ = query_api(test_case_messages, self.engine, self.openai_cache, self.openai_cache_file)
         test_case_answer = test_case_answer.strip().lower()
-        # print(test_case_answer)
         
         return test_case_answer
-    
-
-    def score_test_cases_from_hypothesis_regex(self):
-        """
-        Check whether the regex matches all the test cases.
-            
-        Returns:
-            accuracy (float): The accuracy of the regex on the test cases.
-        """
-        regex = self.generate_hypothesis_regex()
-        tests_passed = []
-        all_test_details = []
-        num_true_positive = 0
-        num_pred_true = 0
-        num_actual_true = 0
-        for test_case in self.test_cases:
-            passed_regex = regex.fullmatch(test_case[0]) is not None
-            tests_passed.append(passed_regex == test_case[1])
-            all_test_details.append({"query": test_case[0], "pred": passed_regex, "actual": test_case[1], "correct?": passed_regex == test_case[1]})
-            num_true_positive += passed_regex and test_case[1]
-            num_pred_true += passed_regex
-            num_actual_true += test_case[1]
-        p = num_true_positive / num_pred_true if num_pred_true > 0 else 0
-        r = num_true_positive / num_actual_true if num_actual_true > 0 else 0
-        f1 = 2 * p * r / (p + r) if p + r > 0 else 0
-        return {"accuracy": sum(tests_passed) / len(tests_passed), "f1": f1}, all_test_details
 
     def score_test_cases_direct(self, start_metrics=None):
         """
@@ -118,15 +87,12 @@ class BaseActiveLearningAgent(ABC):
         # Query Asynchronous API
         all_test_case_messages = []
         test_case_to_answer = {}
-        # breakpoint()
         for test_case in self.test_cases:
             # test_case: tuple of (query, answer)
             test_case_messages = self.get_test_case_prompt(self.interaction_history, test_case[0])
             all_test_case_messages.append(test_case_messages)
             answer, _ = query_api(test_case_messages, self.engine, self.openai_cache, self.openai_cache_file)
             test_case_to_answer[json.dumps(test_case_messages)] = answer.strip().lower()
-        # # Returns dict of {test_case: answer}
-        # test_case_to_answer, _ = async_query_api(all_test_case_messages, self.engine, self.openai_cache, self.openai_cache_file)
 
         # Compute Accuracy and AUCROC and correct_prob
         tests_passed = []
@@ -155,9 +121,6 @@ class BaseActiveLearningAgent(ABC):
                 "correct?": pred_answer == actual_answer,
                 "correct_prob": pred_prob if actual_answer else 1 - pred_prob,
             })
-            # print(f"Query: {test_case_message}")
-            # print(f"Pred: {pred_prob}")
-            # print(f"Actual: {test_case[1]}")
         try:
             aucroc = roc_auc_score([test_case[1] for test_case in self.test_cases], pred_probs)
         except:
@@ -181,42 +144,8 @@ class BaseActiveLearningAgent(ABC):
         metrics_dict["correct_prob_relative"] = metrics_dict["correct_prob"] - start_metrics["correct_prob"][0]
         
         return metrics_dict, all_test_details
-    
-    
-    def score_test_case_select_direct(self):
-        """
-        Condition on query answers directly and select positive test examples.
-            
-        Returns:
-        Tuple[Dict, List[Dict]]: A tuple of the following:
-            Dict: scores (dict): A dictionary containing the accuracy and F1 score of the answers on the test cases.
-                accuracy (float): The accuracy of the answers on the test cases.
-                f1 (float): The F1 score of the answers on the test cases.
-            List[Dict]: all_test_details (list): A list of dictionaries containing the details of each test case.
-        """
-        test_cases_prompt = textwrap.dedent('''\
-            {single_instance_prompt1}
-            {previous_examples}
-            
-            {single_instance_prompt2}
-            {all_test_cases}'''
-        ).format(
-            # implementation=self.implementation,
-            single_instance_prompt1=self.pool_al_prompt[0],
-            previous_examples=self.format_questions_and_answers(interaction_history),
-            single_instance_prompt2=self.pool_al_prompt[2],
-            test_case="\n".join([test_case[0] for test_case in all_test_cases]),
-        )
-        # print(hypothesis_prompt)
-        # return [{"role": "user", "content": hypothesis_prompt}]
-        test_case_messages = self.get_test_case_prompt(self.interaction_history, test_case)
-        test_case_answer, _ = query_api(test_case_messages, self.engine, self.openai_cache, self.openai_cache_file)
-        test_case_answer = test_case_answer.strip().lower()
-        chosen_positive_test_cases = test_case_answer.split(",")
-        # print(test_case_answer)
-        return {"accuracy": sum(tests_passed) / len(tests_passed), "f1": f1}, all_test_details
 
-    def score_test_cases(self, score_type="no_hypothesis", start_metrics=None):
+    def score_test_cases(self, start_metrics=None):
         """
         Scores the test cases.
 
@@ -230,10 +159,7 @@ class BaseActiveLearningAgent(ABC):
                 f1 (float): The F1 score of the answers on the test cases.
             List[Dict]: all_test_details (list): A list of dictionaries containing the details of each test case.
         """
-        if score_type == 'hypothesis':
-            return self.score_test_cases_from_hypothesis_regex()
-        else:
-            return self.score_test_cases_direct(start_metrics=start_metrics)
+        return self.score_test_cases_direct(start_metrics=start_metrics)
 
     def generate_hypothesis_regex(self):
         """
@@ -311,20 +237,11 @@ class BaseActiveLearningAgent(ABC):
 
     def get_oracle_prompt(self, question, question_type):
         answer_description = "Answer the question in the shortest way with minimal additional explanation."
-        # if question_type == "yn":
-        #     answer_description = "Answer the question with 'Yes' or 'No'."
-        # elif question_type == "open":
-        #     answer_description = "Answer the question, keeping your answers short and simple."
-        # elif question_type == "samples":
-        #     answer_description = "Answer the question, keeping your answers short and simple."
-        # else:
-        #     raise ValueError(f"Unknown question type {question_type}")
         oracle_prompt = textwrap.dedent('''\
             {persona} {answer_description}
             {question}'''
         ).format(
             persona=self.persona,
-            # task_description=self.task_description,
             answer_description=answer_description,
             question=question
         )

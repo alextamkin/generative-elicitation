@@ -1,0 +1,50 @@
+{
+    "email_regex": {
+        "Non-interactive": [
+            "email_noninteractive"
+        ],
+        "Generative edge cases": [
+            "email_edge_case"
+        ],
+        "Generative yes/no questions": [
+            "email_questions_yn"
+        ],
+        "Generative open-ended questions": [
+            "email_questions"
+        ]
+    },
+    "moral_reasoning": {
+        "Non-interactive": [
+            "moral_noninteractive"
+        ],
+        "Generative edge cases": [
+            "moral_edge_case"
+        ],
+        "Generative yes/no questions": [
+            "moral_questions_yn"
+        ],
+        "Generative open-ended questions": [
+            "moral_questions"
+        ]
+    },
+    "website_preferences": {
+        "Supervised Learning": [
+            "website_supervised"
+        ],
+        "Non-interactive": [
+            "website_noninteractive"
+        ],
+        "Pool-based Active Learning": [
+            "website_pool_al"
+        ],
+        "Generative edge cases": [
+            "website_edge_case"
+        ],
+        "Generative yes/no questions": [
+            "website_questions_yn"
+        ],
+        "Generative open-ended questions": [
+            "website_questions"
+        ]
+    }
+}

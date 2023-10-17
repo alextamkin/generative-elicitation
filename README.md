@@ -7,26 +7,73 @@ Abstract: Language models (LMs) can be directed to perform target tasks by using
 ## Setting up your environment
 Run the following to set up your conda environment for running GATE:
 ```bash
-conda create -n gen_al PYTHON=3.10
+conda create -n gate PYTHON=3.10
+conda activate gate
 pip install -r requirements.txt
 ```
 
 ## Running the elicitation interface
+First, ensure that the configuration file `annotations_gpt-4/experiment_type_to_prolific_id.json` is initialized as a nested dictionary with domain names (among `website_preferences`, `moral_reasoning`, `email_regex`) as keys for the outer dictionary and elicitation methods (among `Supervised Learning`, `Pool-based Active Learning`, `Non-interactive` aka prompting, `Generative edge cases`, `Generative yes/no questions`, `Generative open-ended questions`) as keys for the inner dictionary.
+```JSON
+{
+    "moral_reasoning": {  // domain name
+        "Generative open-ended questions": [  // elicitation method
+            // experiment IDs for each (domain, elicitation method) pair will populate in here
+        ],
+        ...
+    },
+    ...
+}
+```
+A sample configuration file can be found in [`annotations_gpt-4/experiment_type_to_prolific_id.json`](https://github.com/alextamkin/generative-elicitation/tree/main/annotations_gpt-4/experiment_type_to_prolific_id.json).
+Note that supervised learning and pool-based active learning require access to an existing pool, which is only available for `website_preferences` at the moment.
+
+
 To run the user interface that elicits humans for their preferences, use:
 ```bash
 python WebInterface/server/webserver.py
 ```
-The interface will randomly chooses a domain and query method (from among supervised learning, prompting, pool-based active learning, generative active learning, generative yes-or-no questions, generative open-ended questions) and saves the resulting transcript  under `annotations_gpt-4/`.
+The interface will randomly chooses a domain and elicitation method from among those specified in file `annotations_gpt-4/experiment_to_prolific_ids.json` and query the user for their preferences in that domain, using the elicitation method. The resulting transcript is saved under `annotations_gpt-4/`.
 
-We are not releasing the human-model transcripts we collected at this time due to privacy concerns.
+We are not releasing the human-model transcripts we collected at this time due to privacy concerns. However, some sample transcripts can be found in the folder.
+
 
 ## Evaluating elicitation methods
 
 Given a set of elicitation transcripts and gold human responses (produced by running the elicitation interface above), we can evaluate how well a model is able to make decisions by running the command:
 
 ```bash
-python run_human_experiments.py
+python run_human_evaluation.py \
+    --saved_annotations_dir <saved_annotations_dir> \
+    --task [website_preferences|moral_reasoning|email_regex] \
+    --eval_condition [per_turn|per_minute|at_end] \
+    --engine <engine>
 ```
+where:
+* `--saved_annotations_dir` points to the directory where the human transcripts are saved (e.g. `annotations_gpt-4/`)
+* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation)
+* `--eval_condition` refers to how often we produce evaluate the intermediate results of each transcript, with `per_turn` meaning we evaluate the transcript after each turn, `per_minute` meaning we evaluate the transcript only after each minute of interaction, and `at_end` meaning we only evaluate the transcript at the very end.
+* `--engine` refers to which GPT model we're using (e.g. `gpt-4`)
 
 This prompts a language model to make decisions based on the contents of the transcript and compares them to the human-provided decisions on those same examples.
+
+
+### Using LMs to simulate humans
+Instead of querying real humans, we can also use a LM to *simulate* human preferences. To do so, we prompt GPT4 with a set of persona prompts (which can be found in `gpt_prompts/`). You can run the elicitation loop with simulated humans by running the command:
+
+```bash
+python run_model_evaluation.py \
+    --engine <engine> \
+    --agent [questions|edge_cases|pool] \
+    --eval_condition [per_turn|per_minute|at_end] \
+    --pool_diversity_num_clusters <pool_diversity_num_clusters> \
+    --task [website_preferences|moral_reasoning|email_regex] \
+```
+
+where:
+* `--engine` refers to which GPT model we're using (e.g. `gpt-4`)
+* `--agent` refers to which elicitation method we use to query the simulated human, among generative questions, generative edge cases (i.e. generative active learning), and pool-based active learning (also used for supervised learning, when used in conjunction with random sampling)
+* `--eval_condition` refers to how often we produce evaluate the intermediate results of each transcript, with `per_turn` meaning we evaluate the transcript after each turn, `per_minute` meaning we evaluate the transcript only after each minute of interaction, and `at_end` meaning we only evaluate the transcript at the very end.
+* `--pool_diversity_num_clusters` refers to the number of clusters we use for pool-based active learning with diversity sampling
+* `--task` refers to which domain we are evaluating (content recommendation, moral reasoning, email validation)
 

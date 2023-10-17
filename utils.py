@@ -1,6 +1,5 @@
 from tenacity import (
     retry,
-    stop_after_attempt,
     wait_random_exponential,
 )
 import openai
@@ -8,7 +7,8 @@ import json
 import os
 import asyncio
 
-from typing import Any
+import numpy as np
+from scipy.interpolate import interp1d
 
 
 """
@@ -211,8 +211,6 @@ def update_test_responses(all_test_responses, new_test_responses):
         all_test_responses[t]["correct?"].append(new_test_responses[t]["correct?"])
     return all_test_responses
 
-import numpy as np
-from scipy.interpolate import interp1d
 
 def average_lines(lines, num_points=100):
     """
@@ -245,6 +243,5 @@ def average_lines(lines, num_points=100):
     # Now you have your average line
     average_line = np.column_stack((x_values, y_values))
     assert y_errors.shape[0] == y_values.shape[0]
-    # breakpoint()
     
     return average_line, y_errors

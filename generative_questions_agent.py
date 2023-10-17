@@ -6,6 +6,7 @@ from utils import query_api
 QUESTION_TYPES = ["yn", "open"]
 IMPLEMENTATION = "Python regex"  #["Python regex", "system"]
 
+
 class GenerativeQuestionsAgent(BaseActiveLearningAgent):
     """Active learning agent that generates questions to identify the target regex."""
 
@@ -40,7 +41,6 @@ class GenerativeQuestionsAgent(BaseActiveLearningAgent):
             question_type_insert = "yes/no question"
         elif question_type == "open":
             question_type_insert = "open-ended question"
-            # "an easy-to-answer"
         else:
             raise ValueError(f"Invalid question type: {question_type}")
 

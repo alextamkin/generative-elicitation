@@ -16,7 +16,6 @@ IMPLEMENTATION = "system"  #["Python regex", "system"]
 
 class PoolBasedAgent(BaseActiveLearningAgent):
     """Active learning agent that generates edge cases to identify the target regex."""
-
     def __init__(self, target_specification_file, engine, openai_cache_file=None, pool_data_path=None, pool_al_sampling_type=None, pool_diversity_num_clusters=None, **kwargs):
         super().__init__(target_specification_file, engine, openai_cache_file, **kwargs)
         # either specified in `target_specification_file` or in args
@@ -140,16 +139,12 @@ class PoolBasedAgent(BaseActiveLearningAgent):
             )
             response, _ = query_api(
                 [{"role": "user", "content": al_template}],
-                # "gpt-3.5-turbo",
                 self.engine,
                 openai_cache=self.openai_cache,
                 openai_cache_file=self.openai_cache_file,
                 max_tokens=1000,
             )
-            try:
-                responses = json.loads(response)
-            except:
-                breakpoint()
+            responses = json.loads(response)
             for sample in responses:
                 prob_positive = sample["pred prob"]
                 uncertainty = -prob_positive * np.log(prob_positive) - (1 - prob_positive) * np.log(1 - prob_positive)
@@ -223,7 +218,6 @@ class PoolBasedAgent(BaseActiveLearningAgent):
     def generate_oracle_response(self, edge_case):
         '''Generates an oracle response for the edge case.'''
         if hasattr(self, 'gold_regex'):
-            breakpoint()
             edge_case = edge_case.strip()
             edge_case_passes_gold = self.gold_regex.fullmatch(edge_case) is not None
         else:
