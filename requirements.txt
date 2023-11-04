@@ -1,5 +1,6 @@
 tenacity==8.2.2
 Flask==2.2.3
+Werkzeug<3.0.0
 matplotlib==3.7.1
 numpy==1.24.2
 openai==0.27.0
